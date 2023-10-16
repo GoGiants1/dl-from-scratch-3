@@ -4,8 +4,8 @@ import numpy as np
 class Variable:
     def __init__(self, data):
         self.data = data
-        self.grad = None
-        self.creator = None
+        self.grad = None  # gradient calculated by backward method
+        self.creator = None  # Parent(function) of this variable (링크드리스트 형태로 연결됨)
 
     def set_creator(self, func):
         self.creator = func
@@ -13,9 +13,12 @@ class Variable:
     def backward(self):
         f = self.creator  # 1. Get a function
         if f is not None:
-            x = f.input  # 2. Get the function's input
-            x.grad = f.backward(self.grad)  # 3. Call the function's backward
-            x.backward()
+            # 2. Get the function's input (부모의 입력 변수, 이 곳에서는 `downstream gradient` 저장함)
+            x = f.input
+            x.grad = f.backward(self.grad)  # 3. Call the function's backward method
+            x.backward()  # 4. 연결된 down stream을 따라 backward 호출(recursion과 유사한 흐름으로.)
+
+            # 변수.backward -> 함수.backward -> 변수.backward -> 함수.backward -> ... -> 변수.backward (학습 parameter 까지)
 
 
 class Function:
@@ -37,7 +40,7 @@ class Function:
 
 class Square(Function):
     def forward(self, x):
-        y = x ** 2
+        y = x**2
         return y
 
     def backward(self, gy):
