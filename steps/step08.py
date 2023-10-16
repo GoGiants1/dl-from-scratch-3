@@ -1,6 +1,15 @@
 import numpy as np
 
 
+# =============================================================================
+# 성능 개선 및 확장 가능하도록 코드 수정
+# <--- : Down stream (backward)
+# ---> : Up stream (forward)
+# 성능 개선 point: recursive -> loop. 함수 호출 오버헤드를 줄임.
+# 확장성: 반복문 사용 -> step 15에서 이유 설명. 현재 추측: DFS 방식으로 구현? (Stack)
+# =============================================================================
+
+
 class Variable:
     def __init__(self, data):
         self.data = data
@@ -11,6 +20,7 @@ class Variable:
         self.creator = func
 
     def backward(self):
+        # [한개의 함수]를 리스트에 담아두고
         funcs = [self.creator]
         while funcs:
             f = funcs.pop()  # 1. Get a function
@@ -40,7 +50,7 @@ class Function:
 
 class Square(Function):
     def forward(self, x):
-        y = x ** 2
+        y = x**2
         return y
 
     def backward(self, gy):
