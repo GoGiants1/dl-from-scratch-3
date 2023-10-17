@@ -4,8 +4,9 @@ import numpy as np
 class Variable:
     def __init__(self, data):
         if data is not None:
+            # 데이터 타입 검증 코드 추가
             if not isinstance(data, np.ndarray):
-                raise TypeError('{} is not supported'.format(type(data)))
+                raise TypeError("{} is not supported".format(type(data)))
 
         self.data = data
         self.grad = None
@@ -16,6 +17,8 @@ class Variable:
 
     def backward(self):
         if self.grad is None:
+            # Variable 인스턴스가 스칼라인 경우, 즉 순전파의 출력이 1개인 경우
+            # grad를 np.ones_like(self.data)로 초기화한다.
             self.grad = np.ones_like(self.data)
 
         funcs = [self.creator]
@@ -53,7 +56,7 @@ class Function:
 
 class Square(Function):
     def forward(self, x):
-        y = x ** 2
+        y = x**2
         return y
 
     def backward(self, gy):
