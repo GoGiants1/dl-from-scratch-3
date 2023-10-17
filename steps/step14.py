@@ -1,11 +1,12 @@
 import numpy as np
 
 
+# 같은 변수 반복 사용하는 경우, grad를 초기화해주는 코드 추가
 class Variable:
     def __init__(self, data):
         if data is not None:
             if not isinstance(data, np.ndarray):
-                raise TypeError('{} is not supported'.format(type(data)))
+                raise TypeError("{} is not supported".format(type(data)))
 
         self.data = data
         self.grad = None
@@ -14,6 +15,7 @@ class Variable:
     def set_creator(self, func):
         self.creator = func
 
+    # 인스턴스 재사용을 위해 grad를 None으로 초기화하는 메서드
     def cleargrad(self):
         self.grad = None
 
