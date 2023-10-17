@@ -1,11 +1,12 @@
 import numpy as np
 
 
+# 가변 길이 인수를 받을 수 있도록 list를 사용한다.
 class Variable:
     def __init__(self, data):
         if data is not None:
             if not isinstance(data, np.ndarray):
-                raise TypeError('{} is not supported'.format(type(data)))
+                raise TypeError("{} is not supported".format(type(data)))
 
         self.data = data
         self.grad = None
@@ -35,7 +36,7 @@ def as_array(x):
 
 
 class Function:
-    def __call__(self, inputs):
+    def __call__(self, inputs: list[Variable]):
         xs = [x.data for x in inputs]  # Get data from Variable
         ys = self.forward(xs)
         outputs = [Variable(as_array(y)) for y in ys]  # Wrap data
