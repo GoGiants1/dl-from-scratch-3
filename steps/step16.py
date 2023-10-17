@@ -5,16 +5,16 @@ class Variable:
     def __init__(self, data):
         if data is not None:
             if not isinstance(data, np.ndarray):
-                raise TypeError('{} is not supported'.format(type(data)))
+                raise TypeError("{} is not supported".format(type(data)))
 
         self.data = data
         self.grad = None
         self.creator = None
-        self.generation = 0
+        self.generation = 0  # 세대 수를 기록하는 변수
 
     def set_creator(self, func):
         self.creator = func
-        self.generation = func.generation + 1
+        self.generation = func.generation + 1  # 세대를 기록한다(부모 세대 + 1)
 
     def cleargrad(self):
         self.grad = None
@@ -65,6 +65,7 @@ class Function:
             ys = (ys,)
         outputs = [Variable(as_array(y)) for y in ys]
 
+        # 입력 변수가 둘 이상이면, 입력 값들 중 가장 큰 세대를 기록
         self.generation = max([x.generation for x in inputs])
         for output in outputs:
             output.set_creator(self)
@@ -81,7 +82,7 @@ class Function:
 
 class Square(Function):
     def forward(self, x):
-        y = x ** 2
+        y = x**2
         return y
 
     def backward(self, gy):
