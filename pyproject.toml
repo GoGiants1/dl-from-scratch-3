@@ -17,6 +17,3 @@ pylint = "^3.0.1"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.pylint.messages_control]
-redefined-outer-name = False
