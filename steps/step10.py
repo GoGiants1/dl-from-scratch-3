@@ -6,7 +6,7 @@ class Variable:
     def __init__(self, data):
         if data is not None:
             if not isinstance(data, np.ndarray):
-                raise TypeError('{} is not supported'.format(type(data)))
+                raise TypeError("{} is not supported".format(type(data)))
 
         self.data = data
         self.grad = None
@@ -29,6 +29,8 @@ class Variable:
                 funcs.append(x.creator)
 
 
+# Input과 Output이 스칼라 값인 경우, 벡터 값으로 변환해주는 함수.
+# 데이터 형식 통일을 위해 사용한다.
 def as_array(x):
     if np.isscalar(x):
         return np.array(x)
@@ -39,7 +41,7 @@ class Function:
     def __call__(self, input):
         x = input.data
         y = self.forward(x)
-        output = Variable(as_array(y))
+        output = Variable(as_array(y))  # 데이터 형식 통일
         output.set_creator(self)
         self.input = input
         self.output = output
@@ -54,7 +56,7 @@ class Function:
 
 class Square(Function):
     def forward(self, x):
-        y = x ** 2
+        y = x**2
         return y
 
     def backward(self, gy):
