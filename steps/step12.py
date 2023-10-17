@@ -5,7 +5,7 @@ class Variable:
     def __init__(self, data):
         if data is not None:
             if not isinstance(data, np.ndarray):
-                raise TypeError('{} is not supported'.format(type(data)))
+                raise TypeError("{} is not supported".format(type(data)))
 
         self.data = data
         self.grad = None
@@ -36,9 +36,10 @@ def as_array(x):
 
 class Function:
     def __call__(self, *inputs):
+        # *inputs는 Non-Keyword Arguments (Positional Arguments)를 의미
         xs = [x.data for x in inputs]
-        ys = self.forward(*xs)
-        if not isinstance(ys, tuple):
+        ys = self.forward(*xs)  # asterisk(*)를 붙여 unpacking
+        if not isinstance(ys, tuple):  # scalar인 경우 tuple로 만들어준다. -> iterable하게 만들어준다.
             ys = (ys,)
         outputs = [Variable(as_array(y)) for y in ys]
 
