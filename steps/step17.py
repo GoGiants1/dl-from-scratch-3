@@ -2,11 +2,16 @@ import weakref
 import numpy as np
 
 
+# 메모리 관리 기능 추가.
+# 참조 카운트를 증가시키지 않고, 참조를 약한 참조(weak reference)로 저장한다.
+# 이로써, 순환 참조를 방지할 수 있음. (기존에는 Output과 Function이 서로를 참조하고 있었음.)
+
+
 class Variable:
     def __init__(self, data):
         if data is not None:
             if not isinstance(data, np.ndarray):
-                raise TypeError('{} is not supported'.format(type(data)))
+                raise TypeError("{} is not supported".format(type(data)))
 
         self.data = data
         self.grad = None
@@ -70,6 +75,7 @@ class Function:
         for output in outputs:
             output.set_creator(self)
         self.inputs = inputs
+        # weakref 추가
         self.outputs = [weakref.ref(output) for output in outputs]
         return outputs if len(outputs) > 1 else outputs[0]
 
@@ -82,7 +88,7 @@ class Function:
 
 class Square(Function):
     def forward(self, x):
-        y = x ** 2
+        y = x**2
         return y
 
     def backward(self, gy):
