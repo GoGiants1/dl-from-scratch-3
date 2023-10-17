@@ -1,11 +1,13 @@
 import numpy as np
 
+# 역전파에서 가변 길이 인수 사용하기
+
 
 class Variable:
     def __init__(self, data):
         if data is not None:
             if not isinstance(data, np.ndarray):
-                raise TypeError('{} is not supported'.format(type(data)))
+                raise TypeError("{} is not supported".format(type(data)))
 
         self.data = data
         self.grad = None
@@ -43,8 +45,11 @@ class Function:
     def __call__(self, *inputs):
         xs = [x.data for x in inputs]
         ys = self.forward(*xs)
+
+        # 이후 함수 구현을 직관적으로 할 수 있게 해줌.
         if not isinstance(ys, tuple):
             ys = (ys,)
+
         outputs = [Variable(as_array(y)) for y in ys]
 
         for output in outputs:
@@ -62,7 +67,7 @@ class Function:
 
 class Square(Function):
     def forward(self, x):
-        y = x ** 2
+        y = x**2
         return y
 
     def backward(self, gy):
