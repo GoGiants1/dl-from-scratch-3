@@ -3,6 +3,18 @@ import numpy as np
 import contextlib
 
 
+# 연산자 오버로드 (2)
+# 하지만 ndarray 인스턴스와 Variable 인스턴스를 혼합한 연산은 지원하지 않는다.
+# 전략 -> ndarray 인스턴스를 Variable 인스턴스로 변환하자. (문제점 존재)
+# cons 1. 첫 번째 arg가 float, int 등의 scalar 인 경우
+# (ex: 2.0 * x) 2.0.__mul__(Not implemented) --> x.__rmul__(Not implemented) ...
+# 핵심: 이항 연산자에는 위치에 따라 호출되는 특수 인스턴스가 다르다.
+# 해결책: radd, rmul 등의 특수 메서드를 구현하면 된다.
+# cons 2. 왼쪽 항이 ndarray 인스턴스인 경우.
+# (ex: np.array([1.0, 2.0, 3.0]) * x) --> 왼쪽의 ndarray의 __mul__ 메서드가 호출된다.
+# 해결책: 연산자 우선순위 높이기. __array_priority__ 라는 특수 변수를 설정하면 된다.
+
+
 class Config:
     enable_backprop = True
 
@@ -18,7 +30,7 @@ def using_config(name, value):
 
 
 def no_grad():
-    return using_config('enable_backprop', False)
+    return using_config("enable_backprop", False)
 
 
 class Variable:
@@ -27,7 +39,7 @@ class Variable:
     def __init__(self, data, name=None):
         if data is not None:
             if not isinstance(data, np.ndarray):
-                raise TypeError('{} is not supported'.format(type(data)))
+                raise TypeError("{} is not supported".format(type(data)))
 
         self.data = data
         self.name = name
@@ -56,9 +68,9 @@ class Variable:
 
     def __repr__(self):
         if self.data is None:
-            return 'variable(None)'
-        p = str(self.data).replace('\n', '\n' + ' ' * 9)
-        return 'variable(' + p + ')'
+            return "variable(None)"
+        p = str(self.data).replace("\n", "\n" + " " * 9)
+        return "variable(" + p + ")"
 
     def set_creator(self, func):
         self.creator = func
@@ -117,6 +129,7 @@ def as_array(x):
 
 class Function:
     def __call__(self, *inputs):
+        # ndarray 인스턴스를 Variable 인스턴스로 변환
         inputs = [as_variable(x) for x in inputs]
 
         xs = [x.data for x in inputs]
@@ -151,6 +164,7 @@ class Add(Function):
 
 
 def add(x0, x1):
+    # 스칼라 값들을 ndarray 인스턴스로 변환
     x1 = as_array(x1)
     return Add()(x0, x1)
 
@@ -170,6 +184,7 @@ def mul(x0, x1):
     return Mul()(x0, x1)
 
 
+# 연산자 오버로드
 Variable.__add__ = add
 Variable.__radd__ = add
 Variable.__mul__ = mul

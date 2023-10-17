@@ -3,6 +3,9 @@ import numpy as np
 import contextlib
 
 
+# 변수 사용성 개선 -> 투명한 상자로 만들기
+# 1. 변수명 설정
+# 2. ndarray 처럼 ndim, shape, size, dtype 속성 추가
 class Config:
     enable_backprop = True
 
@@ -18,14 +21,14 @@ def using_config(name, value):
 
 
 def no_grad():
-    return using_config('enable_backprop', False)
+    return using_config("enable_backprop", False)
 
 
 class Variable:
     def __init__(self, data, name=None):
         if data is not None:
             if not isinstance(data, np.ndarray):
-                raise TypeError('{} is not supported'.format(type(data)))
+                raise TypeError("{} is not supported".format(type(data)))
 
         self.data = data
         self.name = name
@@ -33,6 +36,7 @@ class Variable:
         self.creator = None
         self.generation = 0
 
+    # 인스턴스 변수처럼 사용 가능.
     @property
     def shape(self):
         return self.data.shape
@@ -49,14 +53,16 @@ class Variable:
     def dtype(self):
         return self.data.dtype
 
+    # 길이 함수 사용 가능
     def __len__(self):
         return len(self.data)
 
+    # print 함수 사용 가능
     def __repr__(self):
         if self.data is None:
-            return 'variable(None)'
-        p = str(self.data).replace('\n', '\n' + ' ' * 9)
-        return 'variable(' + p + ')'
+            return "variable(None)"
+        p = str(self.data).replace("\n", "\n" + " " * 9)
+        return "variable(" + p + ")"
 
     def set_creator(self, func):
         self.creator = func
@@ -133,7 +139,7 @@ class Function:
 
 class Square(Function):
     def forward(self, x):
-        y = x ** 2
+        y = x**2
         return y
 
     def backward(self, gy):
@@ -160,7 +166,7 @@ def add(x0, x1):
 
 
 x = Variable(np.array([[1, 2, 3], [4, 5, 6]]))
-x.name = 'x'
+x.name = "x"
 
 print(x.name)
 print(x.shape)

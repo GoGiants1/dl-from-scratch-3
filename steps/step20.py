@@ -3,6 +3,10 @@ import numpy as np
 import contextlib
 
 
+# 궁극적인 목표 -> Variable 인스턴스를 ndarray 인스턴스처럼 사용할 수 있게 하자
+# TODO: `*`, `+` 연산자 오버로딩
+
+
 class Config:
     enable_backprop = True
 
@@ -18,14 +22,14 @@ def using_config(name, value):
 
 
 def no_grad():
-    return using_config('enable_backprop', False)
+    return using_config("enable_backprop", False)
 
 
 class Variable:
     def __init__(self, data, name=None):
         if data is not None:
             if not isinstance(data, np.ndarray):
-                raise TypeError('{} is not supported'.format(type(data)))
+                raise TypeError("{} is not supported".format(type(data)))
 
         self.data = data
         self.name = name
@@ -54,9 +58,9 @@ class Variable:
 
     def __repr__(self):
         if self.data is None:
-            return 'variable(None)'
-        p = str(self.data).replace('\n', '\n' + ' ' * 9)
-        return 'variable(' + p + ')'
+            return "variable(None)"
+        p = str(self.data).replace("\n", "\n" + " " * 9)
+        return "variable(" + p + ")"
 
     def set_creator(self, func):
         self.creator = func

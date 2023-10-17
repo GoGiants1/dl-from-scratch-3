@@ -2,6 +2,9 @@ import weakref
 import numpy as np
 import contextlib
 
+# 연산자 오버로드 (3)
+# 남아있는 다양한 연산자들을 오버로드하자.
+
 
 class Config:
     enable_backprop = True
@@ -18,7 +21,7 @@ def using_config(name, value):
 
 
 def no_grad():
-    return using_config('enable_backprop', False)
+    return using_config("enable_backprop", False)
 
 
 class Variable:
@@ -27,7 +30,7 @@ class Variable:
     def __init__(self, data, name=None):
         if data is not None:
             if not isinstance(data, np.ndarray):
-                raise TypeError('{} is not supported'.format(type(data)))
+                raise TypeError("{} is not supported".format(type(data)))
 
         self.data = data
         self.name = name
@@ -56,9 +59,9 @@ class Variable:
 
     def __repr__(self):
         if self.data is None:
-            return 'variable(None)'
-        p = str(self.data).replace('\n', '\n' + ' ' * 9)
-        return 'variable(' + p + ')'
+            return "variable(None)"
+        p = str(self.data).replace("\n", "\n" + " " * 9)
+        return "variable(" + p + ")"
 
     def set_creator(self, func):
         self.creator = func
@@ -209,7 +212,7 @@ class Div(Function):
     def backward(self, gy):
         x0, x1 = self.inputs[0].data, self.inputs[1].data
         gx0 = gy / x1
-        gx1 = gy * (-x0 / x1 ** 2)
+        gx1 = gy * (-x0 / x1**2)
         return gx0, gx1
 
 
@@ -228,7 +231,7 @@ class Pow(Function):
         self.c = c
 
     def forward(self, x):
-        y = x ** self.c
+        y = x**self.c
         return y
 
     def backward(self, gy):
@@ -266,6 +269,6 @@ print(y2)  # variable(1.0)
 y = 3.0 / x
 print(y)  # variable(1.5)
 
-y = x ** 3
+y = x**3
 y.backward()
 print(y)  # variable(8.0)
