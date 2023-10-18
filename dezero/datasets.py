@@ -8,9 +8,11 @@ from dezero.utils import get_file, cache_dir
 from dezero.transforms import Compose, Flatten, ToFloat, Normalize
 
 
+# 대규모, 다양한 데이터셋 다루기 위해 Dataset 클래스를 만들어서 사용.
+# 인터페이스 통일 및 데이터 전처리 자동화
 class Dataset:
     def __init__(self, train=True, transform=None, target_transform=None):
-        self.train = train
+        self.train = train  # Train dataset or test dataset flag
         self.transform = transform
         self.target_transform = target_transform
         if self.transform is None:
@@ -22,6 +24,8 @@ class Dataset:
         self.label = None
         self.prepare()
 
+    # 중요한 메서드는 __getitem__과 __len__이다.
+    # 인터페이스 통일 -> 다양한 데이터셋 사용 가능
     def __getitem__(self, index):
         assert np.isscalar(index)
         if self.label is None:

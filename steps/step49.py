@@ -1,6 +1,7 @@
-if '__file__' in globals():
+if "__file__" in globals():
     import os, sys
-    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+    sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import math
 import numpy as np
 import dezero
@@ -27,8 +28,8 @@ for epoch in range(max_epoch):
     sum_loss = 0
 
     for i in range(max_iter):
-        # Create minibatch
-        batch_index = index[i * batch_size:(i + 1) * batch_size]
+        # Create mini-batch
+        batch_index = index[i * batch_size : (i + 1) * batch_size]
         batch = [train_set[i] for i in batch_index]
         batch_x = np.array([example[0] for example in batch])
         batch_t = np.array([example[1] for example in batch])
@@ -43,4 +44,4 @@ for epoch in range(max_epoch):
 
     # Print loss every epoch
     avg_loss = sum_loss / data_size
-    print('epoch %d, loss %.2f' % (epoch + 1, avg_loss))
+    print("epoch %d, loss %.2f" % (epoch + 1, avg_loss))

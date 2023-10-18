@@ -1,7 +1,9 @@
-if '__file__' in globals():
+if "__file__" in globals():
     import os, sys
-    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+    sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import numpy as np
+
 np.random.seed(0)
 from dezero import Variable, as_variable
 import dezero.functions as F
@@ -28,8 +30,8 @@ t = np.array([2, 0, 1, 0])
 
 y = model(x)
 p = F.softmax_simple(y)
-print(y)
-print(p)
+print("y: ", y)
+print("p: ", p)
 
 loss = F.softmax_cross_entropy_simple(y, t)
 loss.backward()
