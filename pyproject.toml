@@ -15,7 +15,7 @@ numpy = "^1.26.1"
 pylint = "^3.0.1"
 
 [tool.pylint.'MESSAGES CONTROL']
-disable = "redefined-outer-name"
+disable = "redefined-outer-name,import-error"
 
 [build-system]
 requires = ["poetry-core"]
