@@ -5,12 +5,11 @@ import dezero.layers as L
 from dezero import utils
 
 
-
 # =============================================================================
 # Model / Sequential / MLP
 # =============================================================================
 class Model(Layer):
-    def plot(self, *inputs, to_file='model.png'):
+    def plot(self, *inputs, to_file="model.png"):
         y = self.forward(*inputs)
         return utils.plot_dot_graph(y, verbose=True, to_file=to_file)
 
@@ -20,7 +19,7 @@ class Sequential(Model):
         super().__init__()
         self.layers = []
         for i, layer in enumerate(layers):
-            setattr(self, 'l' + str(i), layer)
+            setattr(self, "l" + str(i), layer)
             self.layers.append(layer)
 
     def forward(self, x):
@@ -37,7 +36,7 @@ class MLP(Model):
 
         for i, out_size in enumerate(fc_output_sizes):
             layer = L.Linear(out_size)
-            setattr(self, 'l' + str(i), layer)
+            setattr(self, "l" + str(i), layer)
             self.layers.append(layer)
 
     def forward(self, x):
@@ -50,10 +49,13 @@ class MLP(Model):
 # VGG
 # =============================================================================
 class VGG16(Model):
-    WEIGHTS_PATH = 'https://github.com/koki0702/dezero-models/releases/download/v0.1/vgg16.npz'
+    WEIGHTS_PATH = (
+        "https://github.com/koki0702/dezero-models/releases/download/v0.1/vgg16.npz"
+    )
 
     def __init__(self, pretrained=False):
         super().__init__()
+        # 1. 출력 채널 수만큼 지정 (입력 채널수는 순전파시 자동으로 계산되고 초기화됨)
         self.conv1_1 = L.Conv2d(64, kernel_size=3, stride=1, pad=1)
         self.conv1_2 = L.Conv2d(64, kernel_size=3, stride=1, pad=1)
         self.conv2_1 = L.Conv2d(128, kernel_size=3, stride=1, pad=1)
@@ -67,7 +69,7 @@ class VGG16(Model):
         self.conv5_1 = L.Conv2d(512, kernel_size=3, stride=1, pad=1)
         self.conv5_2 = L.Conv2d(512, kernel_size=3, stride=1, pad=1)
         self.conv5_3 = L.Conv2d(512, kernel_size=3, stride=1, pad=1)
-        self.fc6 = L.Linear(4096)
+        self.fc6 = L.Linear(4096)  # 2. 출력 크기만 지정 (입력 크기는 입력데이터 보고 자동으로 계산됨)
         self.fc7 = L.Linear(4096)
         self.fc8 = L.Linear(1000)
 
@@ -94,7 +96,7 @@ class VGG16(Model):
         x = F.relu(self.conv5_2(x))
         x = F.relu(self.conv5_3(x))
         x = F.pooling(x, 2, 2)
-        x = F.reshape(x, (x.shape[0], -1))
+        x = F.reshape(x, (x.shape[0], -1))  # 3. Pooling -> reshape -> FC
         x = F.dropout(F.relu(self.fc6(x)))
         x = F.dropout(F.relu(self.fc7(x)))
         x = self.fc8(x)
@@ -102,7 +104,7 @@ class VGG16(Model):
 
     @staticmethod
     def preprocess(image, size=(224, 224), dtype=np.float32):
-        image = image.convert('RGB')
+        image = image.convert("RGB")
         if size:
             image = image.resize(size)
         image = np.asarray(image, dtype=dtype)
@@ -116,7 +118,9 @@ class VGG16(Model):
 # ResNet
 # =============================================================================
 class ResNet(Model):
-    WEIGHTS_PATH = 'https://github.com/koki0702/dezero-models/releases/download/v0.1/resnet{}.npz'
+    WEIGHTS_PATH = (
+        "https://github.com/koki0702/dezero-models/releases/download/v0.1/resnet{}.npz"
+    )
 
     def __init__(self, n_layers=152, pretrained=False):
         super().__init__()
@@ -128,8 +132,10 @@ class ResNet(Model):
         elif n_layers == 152:
             block = [3, 8, 36, 3]
         else:
-            raise ValueError('The n_layers argument should be either 50, 101,'
-                             ' or 152, but {} was given.'.format(n_layers))
+            raise ValueError(
+                "The n_layers argument should be either 50, 101,"
+                " or 152, but {} was given.".format(n_layers)
+            )
 
         self.conv1 = L.Conv2d(64, 7, 2, 3)
         self.bn1 = L.BatchNorm()
@@ -178,15 +184,23 @@ def _global_average_pooling_2d(x):
 
 
 class BuildingBlock(Layer):
-    def __init__(self, n_layers=None, in_channels=None, mid_channels=None,
-                 out_channels=None, stride=None, downsample_fb=None):
+    def __init__(
+        self,
+        n_layers=None,
+        in_channels=None,
+        mid_channels=None,
+        out_channels=None,
+        stride=None,
+        downsample_fb=None,
+    ):
         super().__init__()
 
-        self.a = BottleneckA(in_channels, mid_channels, out_channels, stride,
-                             downsample_fb)
-        self._forward = ['a']
+        self.a = BottleneckA(
+            in_channels, mid_channels, out_channels, stride, downsample_fb
+        )
+        self._forward = ["a"]
         for i in range(n_layers - 1):
-            name = 'b{}'.format(i+1)
+            name = "b{}".format(i + 1)
             bottleneck = BottleneckB(out_channels, mid_channels)
             setattr(self, name, bottleneck)
             self._forward.append(name)
@@ -213,23 +227,21 @@ class BottleneckA(Layer):
             (Facebook ResNet).
     """
 
-    def __init__(self, in_channels, mid_channels, out_channels,
-                 stride=2, downsample_fb=False):
+    def __init__(
+        self, in_channels, mid_channels, out_channels, stride=2, downsample_fb=False
+    ):
         super().__init__()
         # In the original MSRA ResNet, stride=2 is on 1x1 convolution.
         # In Facebook ResNet, stride=2 is on 3x3 convolution.
         stride_1x1, stride_3x3 = (1, stride) if downsample_fb else (stride, 1)
-       
-        self.conv1 = L.Conv2d(mid_channels, 1, stride_1x1, 0,
-                              nobias=True)
+
+        self.conv1 = L.Conv2d(mid_channels, 1, stride_1x1, 0, nobias=True)
         self.bn1 = L.BatchNorm()
-        self.conv2 = L.Conv2d(mid_channels, 3, stride_3x3, 1,
-                              nobias=True)
+        self.conv2 = L.Conv2d(mid_channels, 3, stride_3x3, 1, nobias=True)
         self.bn2 = L.BatchNorm()
         self.conv3 = L.Conv2d(out_channels, 1, 1, 0, nobias=True)
         self.bn3 = L.BatchNorm()
-        self.conv4 = L.Conv2d(out_channels, 1, stride, 0,
-                              nobias=True)
+        self.conv4 = L.Conv2d(out_channels, 1, stride, 0, nobias=True)
         self.bn4 = L.BatchNorm()
 
     def forward(self, x):
@@ -249,7 +261,7 @@ class BottleneckB(Layer):
 
     def __init__(self, in_channels, mid_channels):
         super().__init__()
-        
+
         self.conv1 = L.Conv2d(mid_channels, 1, 1, 0, nobias=True)
         self.bn1 = L.BatchNorm()
         self.conv2 = L.Conv2d(mid_channels, 3, 1, 1, nobias=True)
