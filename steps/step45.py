@@ -1,6 +1,7 @@
-if '__file__' in globals():
+if "__file__" in globals():
     import os, sys
-    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+    sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import numpy as np
 from dezero import Model
 import dezero.layers as L
@@ -15,6 +16,7 @@ y = np.sin(2 * np.pi * x) + np.random.rand(100, 1)
 lr = 0.2
 max_iter = 10000
 hidden_size = 10
+
 
 # Model definition
 class TwoLayerNet(Model):
@@ -42,3 +44,5 @@ for i in range(max_iter):
         p.data -= lr * p.grad.data
     if i % 1000 == 0:
         print(loss)
+
+model.plot(x, to_file="twolayernet_step_45.png")

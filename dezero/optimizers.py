@@ -1,5 +1,5 @@
 import math
-from dezero import cuda, Parameter
+from dezero import cuda, Parameter, Layer, Model
 
 
 # =============================================================================
@@ -10,19 +10,25 @@ class Optimizer:
         self.target = None
         self.hooks = []
 
-    def setup(self, target):
+    # 매개변수를 갖는 타겟(레이어나 모델)을 설정한다.
+    def setup(self, target: Layer | Model):
         self.target = target
         return self
 
+    # 모든 매개변수를 갱신한다. but grad is None인 매개변수는 갱신하지 않는다.
     def update(self):
         params = [p for p in self.target.params() if p.grad is not None]
 
+        # 전처리 (Weight decay(Regularization), Gradient clipping 등)
+        # example/mnist.py 참조
         for f in self.hooks:
             f(params)
 
+        # 매개변수 갱신
         for param in params:
             self.update_one(param)
 
+    # 하위 클래스에서 메서드 구현
     def update_one(self, param):
         raise NotImplementedError()
 
@@ -49,7 +55,7 @@ class ClipGrad:
     def __call__(self, params):
         total_norm = 0
         for param in params:
-            total_norm += (param.grad.data ** 2).sum()
+            total_norm += (param.grad.data**2).sum()
         total_norm = math.sqrt(float(total_norm))
 
         rate = self.max_norm / (total_norm + 1e-6)
@@ -73,11 +79,10 @@ class FreezeParam:
             p.grad = None
 
 
-
 # =============================================================================
 # SGD / MomentumSGD / AdaGrad / AdaDelta / Adam
 # =============================================================================
-class SGD(Optimizer):
+class SGD(Optimizer):  # (확률적)경사하강법
     def __init__(self, lr=0.01):
         super().__init__()
         self.lr = lr
@@ -98,10 +103,13 @@ class MomentumSGD(Optimizer):
         if v_key not in self.vs:
             xp = cuda.get_array_module(param.data)
             self.vs[v_key] = xp.zeros_like(param.data)
-
+        # 속도 먼저 계산
         v = self.vs[v_key]
+        # 모멘텀만큼 이전 속도를 반영하고, 학습률을 반영한 param의 grad를 빼준다.
+        # (v <- v * momentum - lr * gW)
         v *= self.momentum
         v -= self.lr * param.grad.data
+        # param에 속도를 더해준다. (W <- W + v)
         param.data += v
 
 
@@ -174,8 +182,8 @@ class Adam(Optimizer):
 
     @property
     def lr(self):
-        fix1 = 1. - math.pow(self.beta1, self.t)
-        fix2 = 1. - math.pow(self.beta2, self.t)
+        fix1 = 1.0 - math.pow(self.beta1, self.t)
+        fix2 = 1.0 - math.pow(self.beta2, self.t)
         return self.alpha * math.sqrt(fix2) / fix1
 
     def update_one(self, param):
