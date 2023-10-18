@@ -13,11 +13,11 @@ from dezero import cuda
 def _dot_var(v, verbose=False):
     dot_var = '{} [label="{}", color=orange, style=filled]\n'
 
-    name = '' if v.name is None else v.name
+    name = "" if v.name is None else v.name
     if verbose and v.data is not None:
         if v.name is not None:
-            name += ': '
-        name += str(v.shape) + ' ' + str(v.dtype)
+            name += ": "
+        name += str(v.shape) + " " + str(v.dtype)
 
     return dot_var.format(id(v), name)
 
@@ -28,7 +28,7 @@ def _dot_func(f):
     ret = dot_func.format(id(f), f.__class__.__name__)
 
     # for edge
-    dot_edge = '{} -> {}\n'
+    dot_edge = "{} -> {}\n"
     for x in f.inputs:
         ret += dot_edge.format(id(x), id(f))
     for y in f.outputs:  # y is weakref
@@ -53,7 +53,7 @@ def get_dot_graph(output, verbose=True):
         str: A graphviz DOT text consisting of nodes and edges that are
             backward-reachable from the output
     """
-    txt = ''
+    txt = ""
     funcs = []
     seen_set = set()
 
@@ -75,31 +75,31 @@ def get_dot_graph(output, verbose=True):
             if x.creator is not None:
                 add_func(x.creator)
 
-    return 'digraph g {\n' + txt + '}'
+    return "digraph g {\n" + txt + "}"
 
 
-def plot_dot_graph(output, verbose=True, to_file='graph.png'):
+def plot_dot_graph(output, verbose=True, to_file="graph.png"):
     dot_graph = get_dot_graph(output, verbose)
+    splitted_text = os.path.splitext(to_file)
+    file_name, extension = splitted_text[0], splitted_text[1][1:]
 
-    tmp_dir = os.path.join(os.path.expanduser('~'), '.dezero')
+    tmp_dir = os.path.join(os.getcwd(), "graphs")
     if not os.path.exists(tmp_dir):
         os.mkdir(tmp_dir)
-    graph_path = os.path.join(tmp_dir, 'tmp_graph.dot')
-
-    with open(graph_path, 'w') as f:
+    graph_path = os.path.join(tmp_dir, f"{file_name}.dot")
+    with open(graph_path, "w") as f:
         f.write(dot_graph)
 
-    extension = os.path.splitext(to_file)[1][1:]  # Extension(e.g. png, pdf)
-    cmd = 'dot {} -T {} -o {}'.format(graph_path, extension, to_file)
+    cmd = "dot {} -T {} -o {}".format(graph_path, extension, "graphs" + "/" + to_file)
     subprocess.run(cmd, shell=True)
 
     # Return the image as a Jupyter Image object, to be displayed in-line.
     try:
         from IPython import display
+
         return display.Image(filename=to_file)
     except:
         pass
-
 
 
 # =============================================================================
@@ -218,16 +218,16 @@ def gradient_check(f, x, *args, rtol=1e-4, atol=1e-5, **kwargs):
     res = array_allclose(num_grad, bp_grad, atol=atol, rtol=rtol)
 
     if not res:
-        print('')
-        print('========== FAILED (Gradient Check) ==========')
-        print('Numerical Grad')
-        print(' shape: {}'.format(num_grad.shape))
+        print("")
+        print("========== FAILED (Gradient Check) ==========")
+        print("Numerical Grad")
+        print(" shape: {}".format(num_grad.shape))
         val = str(num_grad.flatten()[:10])
-        print(' values: {} ...'.format(val[1:-1]))
-        print('Backprop Grad')
-        print(' shape: {}'.format(bp_grad.shape))
+        print(" values: {} ...".format(val[1:-1]))
+        print("Backprop Grad")
+        print(" shape: {}".format(bp_grad.shape))
         val = str(bp_grad.flatten()[:10])
-        print(' values: {} ...'.format(val[1:-1]))
+        print(" values: {} ...".format(val[1:-1]))
     return res
 
 
@@ -256,7 +256,7 @@ def numerical_grad(f, x, *args, **kwargs):
         np_x = x
     grad = xp.zeros_like(x)
 
-    it = np.nditer(np_x, flags=['multi_index'], op_flags=['readwrite'])
+    it = np.nditer(np_x, flags=["multi_index"], op_flags=["readwrite"])
     while not it.finished:
         idx = it.multi_index
         tmp_val = x[idx].copy()
@@ -326,13 +326,15 @@ def show_progress(block_num, block_size, total_size):
     downloaded = block_num * block_size
     p = downloaded / total_size * 100
     i = int(downloaded / total_size * 30)
-    if p >= 100.0: p = 100.0
-    if i >= 30: i = 30
+    if p >= 100.0:
+        p = 100.0
+    if i >= 30:
+        i = 30
     bar = "#" * i + "." * (30 - i)
-    print(bar_template.format(bar, p), end='')
+    print(bar_template.format(bar, p), end="")
 
 
-cache_dir = os.path.join(os.path.expanduser('~'), '.dezero')
+cache_dir = os.path.join(os.path.expanduser("~"), ".dezero")
 
 
 def get_file(url, file_name=None):
@@ -349,7 +351,7 @@ def get_file(url, file_name=None):
         str: Absolute path to the saved file.
     """
     if file_name is None:
-        file_name = url[url.rfind('/') + 1:]
+        file_name = url[url.rfind("/") + 1 :]
     file_path = os.path.join(cache_dir, file_name)
 
     if not os.path.exists(cache_dir):
